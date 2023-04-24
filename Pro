@@ -564,5 +564,19 @@ public class UserService {
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 }
+PPLICATION FAILED TO START
+***************************
+
+Description:
+
+Parameter 0 of constructor in com.OnlineClinicSystem.Service.UserService required a bean of type 'com.OnlineClinicSystem.Repository.UserRepository' that could not be found.
+
+The injection point has the following annotations:
+	- @org.springframework.beans.factory.annotation.Autowired(required=true)
+
+
+Action:
+
+Consider defining a bean of type 'com.OnlineClinicSystem.Repository.UserRepository' in your configuration.
 
 
