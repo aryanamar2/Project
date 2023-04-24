@@ -1,0 +1,293 @@
+@Entity
+@Table(name = "books")
+public class Book {
+@Entity
+@Table(name = "appointments")
+public class Appointment {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patient_id")
+    private Patient patient;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "doctor_id")
+    private Doctor doctor;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id")
+    private Room room;
+
+    @Column(name = "appointment_date")
+    private LocalDate appointmentDate;
+
+    @Column(name = "start_time")
+    private LocalTime startTime;
+
+    @Column(name = "end_time")
+    private LocalTime endTime;
+
+    // getters and setters
+}
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patient_id")
+    private Patient patient;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "doctor_id")
+    private Doctor doctor;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id")
+    private Room room;
+
+    @Column(name = "book_date")
+    private LocalDate bookDate;
+
+    @Column(name = "start_time")
+    private LocalTime startTime;
+
+    @Column(name = "end_time")
+    private LocalTime endTime;
+
+    // getters and setters
+}
+
+BookService
+
+@Service
+public class BookService {
+
+    @Autowired
+    private BookRepository bookRepository;
+
+    public List<Book> getAllBooks() {
+        return bookRepository.findAll();
+    }
+
+    public Book getBookById(Long id) {
+        return bookRepository.findById(id).orElse(null);
+    }
+
+    public Book saveBook(Book book) {
+        return bookRepository.save(book);
+    }
+
+    public void deleteBookById(Long id) {
+        bookRepository.deleteById(id);
+    }
+}
+
+AppointmentService:
+
+@Service
+public class AppointmentService {
+
+    @Autowired
+    private AppointmentRepository appointmentRepository;
+
+    public List<Appointment> getAllAppointments() {
+        return appointmentRepository.findAll();
+    }
+
+    public Appointment getAppointmentById(Long id) {
+        return appointmentRepository.findById(id).orElse(null);
+    }
+
+    public Appointment saveAppointment(Appointment appointment) {
+        return appointmentRepository.save(appointment);
+    }
+
+    public void deleteAppointmentById(Long id) {
+        appointmentRepository.deleteById(id);
+    }
+}
+
+
+BookController
+
+@Controller
+@RequestMapping("/book")
+public class BookController {
+
+    @Autowired
+    private BookService bookService;
+
+    @GetMapping("")
+    public String showBooks(Model model) {
+        List<Book> books = bookService.getAllBooks();
+        model.addAttribute("books", books);
+        return "book";
+    }
+
+    @GetMapping("/create")
+    public String showCreateBookForm(Model model) {
+        model.addAttribute("book", new Book());
+        return "create_book";
+    }
+
+    @PostMapping("/create")
+    public String createBook(@ModelAttribute("book") Book book) {
+        bookService.saveBook(book);
+        return "redirect:/book";
+    }
+
+    @GetMapping("/delete/{id}")
+    public String deleteBook(@PathVariable("id") Long id) {
+        bookService.deleteBookById(id);
+        return "redirect:/book";
+    }
+}
+
+AppointmentController
+
+@Controller
+@RequestMapping("/appointment")
+public class AppointmentController {
+
+    @Autowired
+    private AppointmentService appointmentService;
+
+    @GetMapping("")
+    public String showAppointments(Model model) {
+        List<Appointment> appointments = appointmentService.getAllAppointments();
+        model.addAttribute("appointments", appointments);
+        return "appointment/index";
+    }
+
+    @GetMapping("/add")
+    public String addAppointmentForm(Model model) {
+        model.addAttribute("appointment", new Appointment());
+        return "appointment/add";
+    }
+
+    @PostMapping("/add")
+    public String addAppointment(@ModelAttribute("appointment") Appointment appointment) {
+        appointmentService.saveAppointment(appointment);
+        return "redirect:/appointment";
+    }
+
+    @GetMapping("/edit/{id}")
+    public String editAppointmentForm(@PathVariable("id") Long id, Model model) {
+        Appointment appointment = appointmentService.getAppointmentById(id);
+        if (appointment != null) {
+            model.addAttribute("appointment", appointment);
+            return "appointment/edit";
+        } else {
+            return "redirect:/appointment";
+        }
+    }
+
+    @PostMapping("/edit")
+    public String editAppointment(@ModelAttribute("appointment") Appointment appointment) {
+        appointmentService.saveAppointment(appointment);
+        return "redirect:/appointment";
+    }
+
+    @GetMapping("/delete/{id}")
+    public String deleteAppointment(@PathVariable("id") Long id) {
+        appointmentService.deleteAppointmentById(id);
+        return "redirect:/appointment";
+    }
+}
+
+
+appointment/index.jsp
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Appointments</title>
+</head>
+<body>
+    <h1>Appointments</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <c:forEach items="${appointments}" var="appointment">
+                <tr>
+                    <td>${appointment.id}</td>
+                    <td>${appointment.patient.name}</td>
+                    <td>${appointment.doctor.name}</td>
+                    <td>${appointment.date}</td>
+                    <td>${appointment.time}</td>
+                    <td>
+                        <a href="<c:url value='/appointment/edit/${appointment.id}'/>">Edit</a>
+                        <a href="<c:url value='/appointment/delete/${appointment.id}'/>">Delete</a>
+                    </td>
+                </tr>
+            </c:forEach>
+        </tbody>
+    </table>
+    <a href="<c:url value='/appointment/add'/>">Add New Appointment</a>
+</body>
+</html>
+
+appointment/add.jsp
+
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Appointments</title>
+</head>
+<body>
+	<h1>Appointments</h1>
+	<table>
+		<tr>
+			<th>ID</th>
+			<th>Doctor</th>
+			<th>Patient</th>
+			<th>Date</th>
+			<th>Time</th>
+			<th>Room</th>
+			<th>Action</th>
+		</tr>
+		<c:forEach items="${appointments}" var="appointment">
+			<tr>
+				<td>${appointment.id}</td>
+				<td>${appointment.doctor.doctorName}</td>
+				<td>${appointment.patient.patientName}</td>
+				<td>${appointment.appointmentDate}</td>
+				<td>${appointment.appointmentTime}</td>
+				<td>${appointment.room.roomNumber}</td>
+				<td>
+					<form method="post" action="${pageContext.request.contextPath}/appointment/delete/${appointment.id}">
+						<input type="hidden" name="_method" value="DELETE" />
+						<button type="submit">Delete</button>
+					</form>
+				</td>
+			</tr>
+		</c:forEach>
+	</table>
+	<br />
+	<a href="${pageContext.request.contextPath}/appointment/add">Add Appointment</a>
+</body>
+</html>
+
+
+
+
+
