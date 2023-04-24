@@ -578,5 +578,28 @@ The injection point has the following annotations:
 Action:
 
 Consider defining a bean of type 'com.OnlineClinicSystem.Repository.UserRepository' in your configuration.
+@Configuration
+@EnableJpaRepositories(basePackages = "com.OnlineClinicSystem.Repository")
+public class AppConfig {
+@Value("${spring.datasource.url}")
+private String datasourceUrl;
+@Value("${spring.datasource.username}")
+private String dbUsername;
 
+@Value("${spring.datasource.password}")
+private String dbPassword;
+
+@Value("${spring.datasource.driver-class-name}")
+private String dbDriverClassName;
+
+@Bean
+public DataSource dataSource() {
+    HikariConfig config = new HikariConfig();
+    config.setJdbcUrl(datasourceUrl);
+    config.setUsername(dbUsername);
+    config.setPassword(dbPassword);
+    config.setDriverClassName(dbDriverClassName);
+    return new HikariDataSource(config);
+}
+}
 
